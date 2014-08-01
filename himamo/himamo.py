@@ -3,6 +3,7 @@
 Hidden Markov Model python implementation.
 
 """
+import decimal
 import math
 
 
@@ -17,16 +18,16 @@ class GenericHMM(object):
         Extended exponential function.
 
         Arguments:
-            x (float or None): A number.
+            x (Decimal): A number.
 
         Returns:
-            e**x or None (if x is None).
+            e**x or Decimal('NaN') (if x is not a number).
 
         """
-        if x is None:
-            return 0
+        if x.is_nan():
+            return decimal.Decimal(0)
         else:
-            return math.exp(x)
+            return x.exp()
 
     @classmethod
     def _eln(cls, x):
@@ -34,19 +35,19 @@ class GenericHMM(object):
         Extended logarithm.
 
         Arguments:
-            x (float or None): A number.
+            x (Decimal): A number.
 
         Returns:
-            A logarithm x or None (if x is None).
+            A logarithm x or Decimal('NaN') (if x is not a number).
 
         Reises:
             ValueError if x < 0.
 
         """
         if x == 0:
-            return None
+            return decimal.Decimal('NaN')
         elif x > 0:
-            return math.log(x)
+            return x.ln()
         else:
             raise ValueError
 
@@ -56,23 +57,26 @@ class GenericHMM(object):
         Extended logarithm sum.
 
         Arguments:
-            eln_x (float or None): Natural logarithm from x.
-            eln_y (float or None): Natural logarithm from y.
+            eln_x (Decimal): Natural logarithm from x.
+            eln_y (Decimal): Natural logarithm from y.
 
         Returns:
-            Sum of logarithms or None (if eln_x and eln_y are None).
+            Sum of logarithms or Decimal('NaN') (if eln_x and eln_y is
+            not a number).
 
         """
-        if (eln_x and eln_y) is not None:
+        if not (eln_x.is_nan() or eln_y.is_nan()):
+            dec_1 = decimal.Decimal(1)
             if eln_x > eln_y:
-                return eln_x + cls._eln(1 + math.exp(eln_y - eln_x))
+                return eln_x + cls._eln(dec_1 + (eln_y - eln_x).exp())
             else:
-                return eln_y + cls._eln(1 + math.exp(eln_x - eln_y))
+                return eln_y + cls._eln(dec_1 + (eln_x - eln_y).exp())
+        elif not eln_x.is_nan():
+            return eln_x
+        elif not eln_y.is_nan():
+            return eln_y
         else:
-            # returns: eln_y if eln_x is None,
-            #          eln_x if eln_y is None,
-            #          None if both are None
-            return eln_y or eln_x
+            return decimal.Decimal('NaN')
 
     @classmethod
     def _elnproduct(cls, eln_x, eln_y):
@@ -80,14 +84,15 @@ class GenericHMM(object):
         Extended logarithm product.
 
         Arguments:
-            eln_x (float or None): Natural logarithm from x.
-            eln_y (float or None): Natural logarithm from y.
+            eln_x (Decimal): Natural logarithm from x.
+            eln_y (Decimal): Natural logarithm from y.
 
         Returns:
-            Product of logaritms or None (if eln_x and eln_y are None).
+            Product of logaritms or Decimal('NaN') (if eln_x and eln_y is
+            not a number)
 
         """
-        if (eln_x and eln_y) is not None:
+        if not (eln_x.is_nan() and eln_y.is_nan()):
             return eln_x + eln_y
         else:
-            return None
+            return decimal.Decimal('NaN')
