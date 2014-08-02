@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-Hidden Markov Model python implementation.
+Himamo - well documented, wide tested, numerical stable Hidden Markov Model
+implementation in python.
+
+Copyright (c) 2014 Maciej Żok <maciek.zok@gmail.com>
+MIT License (http://opensource.org/licenses/MIT)
 
 """
 import decimal
-import math
+
+import numpy as np
 
 
 class GenericHMM(object):
@@ -12,6 +17,19 @@ class GenericHMM(object):
     Generic class for Hidden Markov Models.
 
     """
+    def __init__(self, hidden_states=1):
+        self._log_alpha = None
+        self._log_beta = None
+        self._log_gamma = None
+        self._log_eta = None
+
+        self.hidden_states = hidden_states
+        self.output_alphabet = None
+        self.observed_states = None
+        self.initial_states = None
+        self.transition_matrix = None
+        self.observation_symbol = None
+
     @classmethod
     def _eexp(cls, x):
         """
@@ -96,3 +114,46 @@ class GenericHMM(object):
             return eln_x + eln_y
         else:
             return decimal.Decimal('NaN')
+
+    def _compute_logalpha(self):
+        """
+        Compute forward variable alpha_t (i) in log space.
+
+            alpha_t (i) = P(O_1, O_2, ..., O_{t-1}, q_t = S_i|lambda)
+
+            alpha_1 (i) = pi_i b_i (O_1)
+            alpha_{t+1} (i) = b_i (O_{t+1}) sum_{i=1}^N alpha_t (i) a_{ij}
+
+        Returns:
+            An array with logarithm alpha_t (i) elements.
+
+        """
+        initial_states = self.initial_states
+        observation_symbol = self.observation_symbol
+        transition_matrix = self.transition_matrix
+        T = observation_symbol.shape[0]
+        N = observation_symbol.shape[1]
+        log_alpha = np.empty((T, N), dtype=object)
+
+        if initial_states is None:
+            raise ValueError
+
+        for j in xrange(0, N):
+            log_alpha[0, j] = self._elnproduct(
+                self._eln(initial_states[j]),
+                self._eln(observation_symbol[0, j]))
+
+        for t in xrange(1, T):
+            for j in xrange(0, N):
+                logalpha = decimal.Decimal('NaN')
+                for i in xrange(0, N):
+                    logalpha = self._elnsum(
+                        logalpha,
+                        self._elnproduct(log_alpha[t-1, i],
+                                         self._eln(transition_matrix[i, j])))
+                log_alpha[t, j] = self._elnproduct(
+                    logalpha,
+                    self._eln(observation_symbol[t, j]))
+
+        self._log_alpha = log_alpha
+        return log_alpha
