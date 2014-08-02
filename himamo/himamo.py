@@ -135,9 +135,6 @@ class GenericHMM(object):
         T = log_alpha.shape[0]
         N = log_alpha.shape[1]
 
-        if initial_states is None:
-            raise ValueError
-
         for j in xrange(0, N):
             log_alpha[0, j] = self._elnproduct(
                 self._eln(initial_states[j]),
@@ -218,9 +215,6 @@ class GenericHMM(object):
         T = log_gamma.shape[0]
         N = log_gamma.shape[1]
 
-        if (log_alpha is None) or (log_beta is None):
-            raise ValueError
-
         for t in xrange(0, T):
             normalizer = decimal.Decimal('NaN')
             for i in xrange(0, N):
@@ -236,3 +230,49 @@ class GenericHMM(object):
 
         self._log_gamma = log_gamma
         return log_gamma
+
+    def _compute_logeta(self):
+        """
+        Compute eta_t (i, j) variable in log space.
+
+            eta_t (i, j) = P(q_t = S_i, q_{t+1} = S_j|O, lambda)
+
+                        alpha_t (i) a_{ij} b_j (O_{t+1}) beta_{t+1} (j)
+              = ---------------------------------------------------------------
+                 sum_{i,j=1}^N alpha_t (i) a_{ij} b_j (O_{t+1}) beta_{t+1} (j)
+
+            gamma_t (i) = sum_{j=1}^N eta_t (i, j)
+
+        Returns:
+            An array with logarithm eta_t (i, j) elements.
+
+        """
+        transition_matrix = self.transition_matrix
+        observation_symbol = self.observation_symbol
+        log_alpha = self._log_alpha
+        log_beta = self._log_beta
+        T = log_alpha.shape[0]
+        N = log_alpha.shape[1]
+        log_eta = np.zeros((T, N, N), dtype=object)
+
+        for t in xrange(0, T-1):
+            normalizer = decimal.Decimal('NaN')
+            for i in xrange(0, N):
+                for j in xrange(0, N):
+                    log_eta[t, i, j] = self._elnproduct(
+                        log_alpha[t, i],
+                        self._elnproduct(
+                            self._eln(transition_matrix[i, j]),
+                            self._elnproduct(
+                                self._eln(observation_symbol[t+1, j]),
+                                log_beta[t+1, j])))
+                    normalizer = self._elnsum(normalizer,
+                                              log_eta[t, i, j])
+            for i in xrange(0, N):
+                for j in xrange(0, N):
+                    log_eta[t, i, j] = self._elnproduct(
+                        log_eta[t, i, j],
+                        -normalizer)
+
+        self._log_eta = log_eta
+        return log_eta

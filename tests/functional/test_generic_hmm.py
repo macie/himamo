@@ -293,7 +293,7 @@ class LogGammaTestCase(BaseTestCase):
         expected_result = self._expected_gamma(3, 1000)
 
         np.testing.assert_almost_equal(
-            result, expected_result)
+            result, expected_result, decimal=self.num_precision-1)
 
     @unittest.skip('long duration')
     def test_very_large_model_ones(self):
@@ -303,5 +303,83 @@ class LogGammaTestCase(BaseTestCase):
         result = self.model._compute_loggamma()
 
         expected_result = self._expected_gamma(1000, 3)
+
+        np.testing.assert_almost_equal(
+            result, expected_result, decimal=self.num_precision-2)
+
+
+class LogEtaTestCase(BaseTestCase):
+    def setUp(self):
+        pi, a, b = self._testing_parameters_generator(5, 3)
+        self.model.transition_matrix = a
+        self.model.observation_symbol = b
+
+    @classmethod
+    def _expected_eta(cls, N, T):
+        arr = []
+        for i in xrange(0, T-1):
+            arr.append([[(d(1)/(d(N)*d(N))).ln()]*N]*N)
+        arr.append([[d(0)]*N]*N)
+        return np.array(arr)
+
+    def test_small_model_ones(self):
+        self.model._log_alpha = np.array([[d(1)]*5]*3, dtype=object)
+        self.model._log_beta = np.array([[d(1)]*5]*3, dtype=object)
+
+        result = self.model._compute_logeta()
+
+        expected_result = self._expected_eta(5, 3)
+
+        np.testing.assert_array_equal(result, expected_result)
+
+    def test_small_model_very_small_elements(self):
+        very_small_num = d('1e-15')
+        self.model._log_alpha = np.array([[very_small_num]*5]*3, dtype=object)
+        self.model._log_beta = np.array([[very_small_num]*5]*3, dtype=object)
+
+        result = self.model._compute_logeta()
+
+        expected_result = self._expected_eta(5, 3)
+
+        np.testing.assert_array_equal(result, expected_result)
+
+    def test_small_model_very_large_elements(self):
+        very_large_num = d('1e15')
+        self.model._log_alpha = np.array([[very_large_num]*5]*3, dtype=object)
+        self.model._log_beta = np.array([[very_large_num]*5]*3, dtype=object)
+
+        result = self.model._compute_logeta()
+
+        expected_result = self._expected_eta(5, 3)
+
+        np.testing.assert_almost_equal(
+            result, expected_result, decimal=self.num_precision-16)
+
+    @unittest.skip('long duration')
+    def test_small_model_large_time_ones(self):
+        pi, a, b = self._testing_parameters_generator(3, 1000)
+        self.model.transition_matrix = a
+        self.model.observation_symbol = b
+        self.model._log_alpha = np.array([[d(1)]*3]*1000, dtype=object)
+        self.model._log_beta = np.array([[d(1)]*3]*1000, dtype=object)
+
+        result = self.model._compute_logeta()
+
+        expected_result = self._expected_eta(3, 1000)
+
+        np.testing.assert_array_equal(
+            result, expected_result)
+
+    @unittest.skip('long duration')
+    def test_large_model_ones(self):
+        pi, a, b = self._testing_parameters_generator(70, 3)
+        self.model.transition_matrix = a
+        self.model.observation_symbol = b
+        self.model._log_alpha = np.array([[d(1)]*70]*3, dtype=object)
+        self.model._log_beta = np.array([[d(1)]*70]*3, dtype=object)
+
+        result = self.model._compute_logeta()
+
+        expected_result = self._expected_eta(70, 3)
 
         np.testing.assert_almost_equal(result, expected_result)
