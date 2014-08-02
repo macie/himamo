@@ -4,6 +4,7 @@ Functional tests for GenericHMM class.
 
 """
 from decimal import Decimal as d
+from decimal import getcontext
 import unittest
 
 import mock
@@ -16,6 +17,7 @@ class BaseTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.model = GenericHMM()
+        cls.num_precision = getcontext().prec
 
     @classmethod
     def _testing_parameters_generator(
@@ -144,7 +146,8 @@ class LogAlphaTestCase(BaseTestCase):
 
         expected_result = self._expected_alpha(3, 1000, d(1))
 
-        np.testing.assert_almost_equal(result, expected_result, decimal=22)
+        np.testing.assert_almost_equal(
+            result, expected_result, decimal=self.num_precision-6)
 
     @unittest.skip('long duration')
     def test_large_model_ones(self):
@@ -157,7 +160,8 @@ class LogAlphaTestCase(BaseTestCase):
 
         expected_result = self._expected_alpha(50, 3, d(1))
 
-        np.testing.assert_almost_equal(result, expected_result, decimal=26)
+        np.testing.assert_almost_equal(
+            result, expected_result, decimal=self.num_precision-2)
 
 
 class LogBetaTestCase(BaseTestCase):
@@ -219,7 +223,8 @@ class LogBetaTestCase(BaseTestCase):
 
         expected_result = self._expected_beta(3, 1000, d(1))
 
-        np.testing.assert_almost_equal(result, expected_result, decimal=22)
+        np.testing.assert_almost_equal(
+            result, expected_result, decimal=self.num_precision-6)
 
     @unittest.skip('long duration')
     def test_large_model_ones(self):
@@ -232,4 +237,71 @@ class LogBetaTestCase(BaseTestCase):
 
         expected_result = self._expected_beta(50, 3, d(1))
 
-        np.testing.assert_almost_equal(result, expected_result, decimal=26)
+        np.testing.assert_almost_equal(
+            result, expected_result, decimal=self.num_precision-2)
+
+
+class LogGammaTestCase(BaseTestCase):
+    @classmethod
+    def _expected_gamma(cls, N, T):
+        arr = []
+        for i in xrange(0, T):
+            arr.append([(d(1)/d(N)).ln()]*N)
+        return np.array(arr)
+
+    def test_small_model_ones(self):
+        self.model._log_alpha = np.array([[d(1)]*5]*3, dtype=object)
+        self.model._log_beta = np.array([[d(1)]*5]*3, dtype=object)
+
+        result = self.model._compute_loggamma()
+
+        expected_result = self._expected_gamma(5, 3)
+
+        np.testing.assert_almost_equal(
+            result, expected_result, decimal=self.num_precision-1)
+
+    def test_small_model_very_small_elements(self):
+        very_small_num = d('1e-15')
+        self.model._log_alpha = np.array([[very_small_num]*5]*3, dtype=object)
+        self.model._log_beta = np.array([[very_small_num]*5]*3, dtype=object)
+
+        result = self.model._compute_loggamma()
+
+        expected_result = self._expected_gamma(5, 3)
+
+        np.testing.assert_array_equal(result, expected_result)
+
+    def test_small_model_very_large_elements(self):
+        very_large_num = d('1e15')
+        self.model._log_alpha = np.array([[very_large_num]*5]*3, dtype=object)
+        self.model._log_beta = np.array([[very_large_num]*5]*3, dtype=object)
+
+        result = self.model._compute_loggamma()
+
+        expected_result = self._expected_gamma(5, 3)
+
+        np.testing.assert_almost_equal(
+            result, expected_result, decimal=self.num_precision-15)
+
+    @unittest.skip('long duration')
+    def test_small_model_large_time_ones(self):
+        self.model._log_alpha = np.array([[d(1)]*3]*1000, dtype=object)
+        self.model._log_beta = np.array([[d(1)]*3]*1000, dtype=object)
+
+        result = self.model._compute_loggamma()
+
+        expected_result = self._expected_gamma(3, 1000)
+
+        np.testing.assert_almost_equal(
+            result, expected_result)
+
+    @unittest.skip('long duration')
+    def test_very_large_model_ones(self):
+        self.model._log_alpha = np.array([[d(1)]*1000]*3, dtype=object)
+        self.model._log_beta = np.array([[d(1)]*1000]*3, dtype=object)
+
+        result = self.model._compute_loggamma()
+
+        expected_result = self._expected_gamma(1000, 3)
+
+        np.testing.assert_almost_equal(result, expected_result)

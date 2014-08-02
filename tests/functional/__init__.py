@@ -4,6 +4,7 @@ Functional tests for himamo.
 
 """
 
-from tests.functional.test_himamo import GenericHMMTestCase
+from tests.functional.test_generic_hmm import BasicMethodsTestCase, LogAlphaTestCase, LogBetaTestCase, LogGammaTestCase
 
-__all__ = ['GenericHMMTestCase']
+__all__ = ['BasicMethodsTestCase', 'LogAlphaTestCase', 'LogBetaTestCase'
+           'LogGammaTestCase']

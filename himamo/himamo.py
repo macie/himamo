@@ -131,9 +131,9 @@ class GenericHMM(object):
         initial_states = self.initial_states
         observation_symbol = self.observation_symbol
         transition_matrix = self.transition_matrix
-        T = observation_symbol.shape[0]
-        N = observation_symbol.shape[1]
-        log_alpha = np.empty((T, N), dtype=object)
+        log_alpha = np.empty_like(observation_symbol)
+        T = log_alpha.shape[0]
+        N = log_alpha.shape[1]
 
         if initial_states is None:
             raise ValueError
@@ -173,10 +173,9 @@ class GenericHMM(object):
         """
         transition_matrix = self.transition_matrix
         observation_symbol = self.observation_symbol
-        T = observation_symbol.shape[0]
-        N = observation_symbol.shape[1]
-
-        log_beta = np.empty((T, N), dtype=object)
+        log_beta = np.empty_like(observation_symbol)
+        T = log_beta.shape[0]
+        N = log_beta.shape[1]
 
         for i in xrange(0, N):
             log_beta[T-1, i] = decimal.Decimal(0)
@@ -196,3 +195,44 @@ class GenericHMM(object):
 
         self._log_beta = log_beta
         return log_beta
+
+    def _compute_loggamma(self):
+        """
+        Compute gamma_t (i) variable in log space.
+
+            gamma_t (i) = P(q_t = S_i|O, lambda)
+
+                                alpha_t (i) beta_t (i))
+            gamma_t (i) = ------------------------------------
+                           sum_{j=1}^N alpha_t (j) beta_t (j)
+
+            sum_{i=1}^N gamma_t (i) = 1
+
+        Returns:
+            An array with logarithm gamma_t (i) elements.
+
+        """
+        log_alpha = self._log_alpha
+        log_beta = self._log_beta
+        log_gamma = np.empty_like(log_alpha)
+        T = log_gamma.shape[0]
+        N = log_gamma.shape[1]
+
+        if (log_alpha is None) or (log_beta is None):
+            raise ValueError
+
+        for t in xrange(0, T):
+            normalizer = decimal.Decimal('NaN')
+            for i in xrange(0, N):
+                log_gamma[t, i] = self._elnproduct(
+                    log_alpha[t, i],
+                    log_beta[t, i])
+                normalizer = self._elnsum(normalizer,
+                                          log_gamma[t, i])
+            for i in xrange(0, N):
+                log_gamma[t, i] = self._elnproduct(
+                    log_gamma[t, i],
+                    -normalizer)
+
+        self._log_gamma = log_gamma
+        return log_gamma
