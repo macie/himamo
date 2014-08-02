@@ -158,3 +158,78 @@ class LogAlphaTestCase(BaseTestCase):
         expected_result = self._expected_alpha(50, 3, d(1))
 
         np.testing.assert_almost_equal(result, expected_result, decimal=26)
+
+
+class LogBetaTestCase(BaseTestCase):
+    @classmethod
+    def _expected_beta(cls, N, T, num):
+        arr = []
+        for i in xrange(0, T):
+            arr.insert(0, [((d(N)**d(i))*(num**d(i))).ln()]*N)
+        return np.array(arr)
+
+    def test_small_model_ones(self):
+        pi, a, b = self._testing_parameters_generator(5, 3)
+        self.model.initial_states = pi
+        self.model.transition_matrix = a
+        self.model.observation_symbol = b
+
+        result = self.model._compute_logbeta()
+
+        expected_result = self._expected_beta(5, 3, d(1))
+
+        np.testing.assert_array_equal(result, expected_result)
+
+    def test_small_model_very_small_elements(self):
+        very_small_num = d('1e-15')
+        pi, a, b = self._testing_parameters_generator(
+            5, 3, pi_val=very_small_num, a_val=very_small_num)
+        self.model.initial_states = pi
+        self.model.transition_matrix = a
+        self.model.observation_symbol = b
+
+        result = self.model._compute_logbeta()
+
+        expected_result = self._expected_beta(5, 3, very_small_num)
+
+        np.testing.assert_array_equal(result, expected_result)
+
+    def test_small_model_very_large_elements(self):
+        very_large_num = d('1e15')
+        pi, a, b = self._testing_parameters_generator(
+            5, 3, pi_val=very_large_num, a_val=very_large_num)
+        self.model.initial_states = pi
+        self.model.transition_matrix = a
+        self.model.observation_symbol = b
+
+        result = self.model._compute_logbeta()
+
+        expected_result = self._expected_beta(5, 3, very_large_num)
+
+        np.testing.assert_array_equal(result, expected_result)
+
+    @unittest.skip('long duration')
+    def test_small_model_large_time_ones(self):
+        pi, a, b = self._testing_parameters_generator(3, 1000)
+        self.model.initial_states = pi
+        self.model.transition_matrix = a
+        self.model.observation_symbol = b
+
+        result = self.model._compute_logbeta()
+
+        expected_result = self._expected_beta(3, 1000, d(1))
+
+        np.testing.assert_almost_equal(result, expected_result, decimal=22)
+
+    @unittest.skip('long duration')
+    def test_large_model_ones(self):
+        pi, a, b = self._testing_parameters_generator(50, 3)
+        self.model.initial_states = pi
+        self.model.transition_matrix = a
+        self.model.observation_symbol = b
+
+        result = self.model._compute_logbeta()
+
+        expected_result = self._expected_beta(50, 3, d(1))
+
+        np.testing.assert_almost_equal(result, expected_result, decimal=26)

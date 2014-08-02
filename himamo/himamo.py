@@ -157,3 +157,42 @@ class GenericHMM(object):
 
         self._log_alpha = log_alpha
         return log_alpha
+
+    def _compute_logbeta(self):
+        """
+        Compute backward variable beta_t (i) in log space.
+
+            beta_t (i) = P(O_{t+1}, O_{t+2}, ..., O_T, q_t = S_i|lambda)
+
+            beta_T (i) = 1
+            beta_{t+1} (i) = sum_{j=1}^N a_{ij} b_j (O_{t+1}) beta_{t+1} (j)
+
+        Returns:
+            An array with logarithm beta_t (i) elements.
+
+        """
+        transition_matrix = self.transition_matrix
+        observation_symbol = self.observation_symbol
+        T = observation_symbol.shape[0]
+        N = observation_symbol.shape[1]
+
+        log_beta = np.empty((T, N), dtype=object)
+
+        for i in xrange(0, N):
+            log_beta[T-1, i] = decimal.Decimal(0)
+
+        for t in xrange(T - 2, -1, -1):
+            for i in xrange(0, N):
+                logbeta = decimal.Decimal('NaN')
+                for j in xrange(0, N):
+                    logbeta = self._elnsum(
+                        logbeta,
+                        self._elnproduct(
+                            self._eln(transition_matrix[i, j]),
+                            self._elnproduct(
+                                self._eln(observation_symbol[t+1, j]),
+                                log_beta[t+1, j])))
+                log_beta[t, i] = logbeta
+
+        self._log_beta = log_beta
+        return log_beta
