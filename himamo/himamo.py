@@ -231,6 +231,47 @@ class GenericHMM(object):
         self._log_gamma = log_gamma
         return log_gamma
 
+    def _compute_logdelta(self):
+        """
+        Compute Viterbi's variable delta_t (i) in log space.
+
+            delta_t (i) = max_{q_{i<t}} P(q_1, ..., q_{t-1}, q_t = i, O|lambda)
+
+            delta_1 (i) = pi_i b_i (O_1)
+            delta_t+1 (j) = max_i (delta_{t-1} (i) a_ij) b_j (O_t)
+
+
+        Returns:
+            An array with logarithm delta_t (i) elements.
+
+        """
+        initial_states = self.initial_states
+        observation_symbol = self.observation_symbol
+        transition_matrix = self.transition_matrix
+        log_delta = np.empty_like(observation_symbol)
+        T = log_delta.shape[0]
+        N = log_delta.shape[1]
+
+        for i in xrange(0, N):
+            log_delta[0, i] = self._elnproduct(
+                self._eln(initial_states[i]),
+                self._eln(observation_symbol[0, i]))
+
+        for t in xrange(1, T):
+            for j in xrange(0, N):
+                max_sum = decimal.Decimal('-Inf')
+                for i in xrange(0, N):
+                    max_sum = max(
+                        max_sum,
+                        self._elnproduct(
+                            log_delta[t-1, i],
+                            self._eln(transition_matrix[i, j])))
+                log_delta[t, j] = self._elnproduct(
+                    max_sum,
+                    self._eln(observation_symbol[t, j]))
+
+        return log_delta
+
     def _compute_logeta(self):
         """
         Compute eta_t (i, j) variable in log space.

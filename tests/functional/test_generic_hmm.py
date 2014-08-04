@@ -308,6 +308,81 @@ class LogGammaTestCase(BaseTestCase):
             result, expected_result, decimal=self.num_precision-2)
 
 
+class LogDeltaTestCase(BaseTestCase):
+    @classmethod
+    def _expected_delta(cls, N, T, num=d(1)):
+        arr = []
+        for i in xrange(0, T):
+            arr.append([(num**d(i+1)).ln()]*N)
+        return np.array(arr)
+
+    def test_small_model_ones(self):
+        pi, a, b = self._testing_parameters_generator(5, 3)
+        self.model.initial_states = pi
+        self.model.transition_matrix = a
+        self.model.observation_symbol = b
+
+        result = self.model._compute_logdelta()
+
+        expected_result = self._expected_delta(5, 3)
+
+        np.testing.assert_array_equal(result, expected_result)
+
+    def test_small_model_very_small_elements(self):
+        very_small_num = d('1e-15')
+        pi, a, b = self._testing_parameters_generator(
+            5, 3, pi_val=very_small_num, a_val=very_small_num)
+        self.model.initial_states = pi
+        self.model.transition_matrix = a
+        self.model.observation_symbol = b
+
+        result = self.model._compute_logdelta()
+
+        expected_result = self._expected_delta(5, 3, very_small_num)
+
+        np.testing.assert_array_equal(result, expected_result)
+
+    def test_small_model_very_large_elements(self):
+        very_large_num = d('1e15')
+        pi, a, b = self._testing_parameters_generator(
+            5, 3, pi_val=very_large_num, a_val=very_large_num)
+        self.model.initial_states = pi
+        self.model.transition_matrix = a
+        self.model.observation_symbol = b
+
+        result = self.model._compute_logdelta()
+
+        expected_result = self._expected_delta(5, 3, very_large_num)
+
+        np.testing.assert_array_equal(result, expected_result)
+
+    @unittest.skip('long duration')
+    def test_small_model_large_time_ones(self):
+        pi, a, b = self._testing_parameters_generator(3, 1000)
+        self.model.initial_states = pi
+        self.model.transition_matrix = a
+        self.model.observation_symbol = b
+
+        result = self.model._compute_logdelta()
+
+        expected_result = self._expected_delta(3, 1000)
+
+        np.testing.assert_array_equal(result, expected_result)
+
+    @unittest.skip('long duration')
+    def test_large_model_ones(self):
+        pi, a, b = self._testing_parameters_generator(200, 3)
+        self.model.initial_states = pi
+        self.model.transition_matrix = a
+        self.model.observation_symbol = b
+
+        result = self.model._compute_logdelta()
+
+        expected_result = self._expected_delta(200, 3)
+
+        np.testing.assert_array_equal(result, expected_result)
+
+
 class LogEtaTestCase(BaseTestCase):
     def setUp(self):
         pi, a, b = self._testing_parameters_generator(5, 3)
@@ -367,8 +442,7 @@ class LogEtaTestCase(BaseTestCase):
 
         expected_result = self._expected_eta(3, 1000)
 
-        np.testing.assert_array_equal(
-            result, expected_result)
+        np.testing.assert_array_equal(result, expected_result)
 
     @unittest.skip('long duration')
     def test_large_model_ones(self):
@@ -382,4 +456,5 @@ class LogEtaTestCase(BaseTestCase):
 
         expected_result = self._expected_eta(70, 3)
 
-        np.testing.assert_almost_equal(result, expected_result)
+        np.testing.assert_almost_equal(
+            result, expected_result, decimal=self.num_precision-3)
