@@ -24,9 +24,9 @@ class BaseTestCase(unittest.TestCase):
             cls, N, T, pi_val=d(1), a_val=d(1), b_val=d(1)):
         initial_states = np.array([pi_val]*N, dtype=object)
         transition_matrix = np.array([[a_val]*N]*N, dtype=object)
-        observation_symbol = np.array([[b_val]*N]*T, dtype=object)
+        emission_matrix = np.array([[b_val]*N]*T, dtype=object)
 
-        return initial_states, transition_matrix, observation_symbol
+        return initial_states, transition_matrix, emission_matrix
 
 
 class BasicMethodsTestCase(BaseTestCase):
@@ -99,7 +99,7 @@ class LogAlphaTestCase(BaseTestCase):
         pi, a, b = self._testing_parameters_generator(5, 3)
         self.model.initial_states = pi
         self.model.transition_matrix = a
-        self.model.observation_symbol = b
+        self.model.emission_matrix = b
 
         result = self.model._compute_logalpha()
 
@@ -113,7 +113,7 @@ class LogAlphaTestCase(BaseTestCase):
             5, 3, pi_val=very_small_num, a_val=very_small_num)
         self.model.initial_states = pi
         self.model.transition_matrix = a
-        self.model.observation_symbol = b
+        self.model.emission_matrix = b
 
         result = self.model._compute_logalpha()
 
@@ -127,7 +127,7 @@ class LogAlphaTestCase(BaseTestCase):
             5, 3, pi_val=very_large_num, a_val=very_large_num)
         self.model.initial_states = pi
         self.model.transition_matrix = a
-        self.model.observation_symbol = b
+        self.model.emission_matrix = b
 
         result = self.model._compute_logalpha()
 
@@ -140,7 +140,7 @@ class LogAlphaTestCase(BaseTestCase):
         pi, a, b = self._testing_parameters_generator(3, 1000)
         self.model.initial_states = pi
         self.model.transition_matrix = a
-        self.model.observation_symbol = b
+        self.model.emission_matrix = b
 
         result = self.model._compute_logalpha()
 
@@ -154,7 +154,7 @@ class LogAlphaTestCase(BaseTestCase):
         pi, a, b = self._testing_parameters_generator(50, 3)
         self.model.initial_states = pi
         self.model.transition_matrix = a
-        self.model.observation_symbol = b
+        self.model.emission_matrix = b
 
         result = self.model._compute_logalpha()
 
@@ -176,7 +176,7 @@ class LogBetaTestCase(BaseTestCase):
         pi, a, b = self._testing_parameters_generator(5, 3)
         self.model.initial_states = pi
         self.model.transition_matrix = a
-        self.model.observation_symbol = b
+        self.model.emission_matrix = b
 
         result = self.model._compute_logbeta()
 
@@ -190,7 +190,7 @@ class LogBetaTestCase(BaseTestCase):
             5, 3, pi_val=very_small_num, a_val=very_small_num)
         self.model.initial_states = pi
         self.model.transition_matrix = a
-        self.model.observation_symbol = b
+        self.model.emission_matrix = b
 
         result = self.model._compute_logbeta()
 
@@ -204,7 +204,7 @@ class LogBetaTestCase(BaseTestCase):
             5, 3, pi_val=very_large_num, a_val=very_large_num)
         self.model.initial_states = pi
         self.model.transition_matrix = a
-        self.model.observation_symbol = b
+        self.model.emission_matrix = b
 
         result = self.model._compute_logbeta()
 
@@ -217,7 +217,7 @@ class LogBetaTestCase(BaseTestCase):
         pi, a, b = self._testing_parameters_generator(3, 1000)
         self.model.initial_states = pi
         self.model.transition_matrix = a
-        self.model.observation_symbol = b
+        self.model.emission_matrix = b
 
         result = self.model._compute_logbeta()
 
@@ -231,7 +231,7 @@ class LogBetaTestCase(BaseTestCase):
         pi, a, b = self._testing_parameters_generator(50, 3)
         self.model.initial_states = pi
         self.model.transition_matrix = a
-        self.model.observation_symbol = b
+        self.model.emission_matrix = b
 
         result = self.model._compute_logbeta()
 
@@ -320,7 +320,7 @@ class LogDeltaTestCase(BaseTestCase):
         pi, a, b = self._testing_parameters_generator(5, 3)
         self.model.initial_states = pi
         self.model.transition_matrix = a
-        self.model.observation_symbol = b
+        self.model.emission_matrix = b
 
         result = self.model._compute_logdelta()
 
@@ -334,7 +334,7 @@ class LogDeltaTestCase(BaseTestCase):
             5, 3, pi_val=very_small_num, a_val=very_small_num)
         self.model.initial_states = pi
         self.model.transition_matrix = a
-        self.model.observation_symbol = b
+        self.model.emission_matrix = b
 
         result = self.model._compute_logdelta()
 
@@ -348,7 +348,7 @@ class LogDeltaTestCase(BaseTestCase):
             5, 3, pi_val=very_large_num, a_val=very_large_num)
         self.model.initial_states = pi
         self.model.transition_matrix = a
-        self.model.observation_symbol = b
+        self.model.emission_matrix = b
 
         result = self.model._compute_logdelta()
 
@@ -361,7 +361,7 @@ class LogDeltaTestCase(BaseTestCase):
         pi, a, b = self._testing_parameters_generator(3, 1000)
         self.model.initial_states = pi
         self.model.transition_matrix = a
-        self.model.observation_symbol = b
+        self.model.emission_matrix = b
 
         result = self.model._compute_logdelta()
 
@@ -374,7 +374,7 @@ class LogDeltaTestCase(BaseTestCase):
         pi, a, b = self._testing_parameters_generator(200, 3)
         self.model.initial_states = pi
         self.model.transition_matrix = a
-        self.model.observation_symbol = b
+        self.model.emission_matrix = b
 
         result = self.model._compute_logdelta()
 
@@ -387,7 +387,7 @@ class LogEtaTestCase(BaseTestCase):
     def setUp(self):
         pi, a, b = self._testing_parameters_generator(5, 3)
         self.model.transition_matrix = a
-        self.model.observation_symbol = b
+        self.model.emission_matrix = b
 
     @classmethod
     def _expected_eta(cls, N, T):
@@ -434,7 +434,7 @@ class LogEtaTestCase(BaseTestCase):
     def test_small_model_large_time_ones(self):
         pi, a, b = self._testing_parameters_generator(3, 1000)
         self.model.transition_matrix = a
-        self.model.observation_symbol = b
+        self.model.emission_matrix = b
         self.model._log_alpha = np.array([[d(1)]*3]*1000, dtype=object)
         self.model._log_beta = np.array([[d(1)]*3]*1000, dtype=object)
 
@@ -448,7 +448,7 @@ class LogEtaTestCase(BaseTestCase):
     def test_large_model_ones(self):
         pi, a, b = self._testing_parameters_generator(70, 3)
         self.model.transition_matrix = a
-        self.model.observation_symbol = b
+        self.model.emission_matrix = b
         self.model._log_alpha = np.array([[d(1)]*70]*3, dtype=object)
         self.model._log_beta = np.array([[d(1)]*70]*3, dtype=object)
 

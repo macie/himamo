@@ -17,18 +17,20 @@ class GenericHMM(object):
     Generic class for Hidden Markov Models.
 
     """
-    def __init__(self, hidden_states=1):
+    def __init__(self, states, symbols):
         self._log_alpha = None
         self._log_beta = None
         self._log_gamma = None
         self._log_eta = None
 
-        self.hidden_states = hidden_states
-        self.output_alphabet = None
-        self.observed_states = None
-        self.initial_states = None
-        self.transition_matrix = None
-        self.observation_symbol = None
+        N = len(states)   # number of states
+        M = len(symbols)  # number of symbols
+
+        self.states = states
+        self.symbols = symbols
+        self.initial_states = np.empty((N), dtype=object)
+        self.transition_matrix = np.empty((N, N), dtype=object)
+        self.emission_matrix = np.empty((N, M), dtype=object)
 
     @classmethod
     def _eexp(cls, x):
@@ -129,16 +131,16 @@ class GenericHMM(object):
 
         """
         initial_states = self.initial_states
-        observation_symbol = self.observation_symbol
+        emission_matrix = self.emission_matrix
         transition_matrix = self.transition_matrix
-        log_alpha = np.empty_like(observation_symbol)
+        log_alpha = np.empty_like(emission_matrix)
         T = log_alpha.shape[0]
         N = log_alpha.shape[1]
 
         for j in xrange(0, N):
             log_alpha[0, j] = self._elnproduct(
                 self._eln(initial_states[j]),
-                self._eln(observation_symbol[0, j]))
+                self._eln(emission_matrix[0, j]))
 
         for t in xrange(1, T):
             for j in xrange(0, N):
@@ -150,7 +152,7 @@ class GenericHMM(object):
                                          self._eln(transition_matrix[i, j])))
                 log_alpha[t, j] = self._elnproduct(
                     logalpha,
-                    self._eln(observation_symbol[t, j]))
+                    self._eln(emission_matrix[t, j]))
 
         self._log_alpha = log_alpha
         return log_alpha
@@ -169,8 +171,8 @@ class GenericHMM(object):
 
         """
         transition_matrix = self.transition_matrix
-        observation_symbol = self.observation_symbol
-        log_beta = np.empty_like(observation_symbol)
+        emission_matrix = self.emission_matrix
+        log_beta = np.empty_like(emission_matrix)
         T = log_beta.shape[0]
         N = log_beta.shape[1]
 
@@ -186,7 +188,7 @@ class GenericHMM(object):
                         self._elnproduct(
                             self._eln(transition_matrix[i, j]),
                             self._elnproduct(
-                                self._eln(observation_symbol[t+1, j]),
+                                self._eln(emission_matrix[t+1, j]),
                                 log_beta[t+1, j])))
                 log_beta[t, i] = logbeta
 
@@ -246,16 +248,16 @@ class GenericHMM(object):
 
         """
         initial_states = self.initial_states
-        observation_symbol = self.observation_symbol
+        emission_matrix = self.emission_matrix
         transition_matrix = self.transition_matrix
-        log_delta = np.empty_like(observation_symbol)
+        log_delta = np.empty_like(emission_matrix)
         T = log_delta.shape[0]
         N = log_delta.shape[1]
 
         for i in xrange(0, N):
             log_delta[0, i] = self._elnproduct(
                 self._eln(initial_states[i]),
-                self._eln(observation_symbol[0, i]))
+                self._eln(emission_matrix[0, i]))
 
         for t in xrange(1, T):
             for j in xrange(0, N):
@@ -268,7 +270,7 @@ class GenericHMM(object):
                             self._eln(transition_matrix[i, j])))
                 log_delta[t, j] = self._elnproduct(
                     max_sum,
-                    self._eln(observation_symbol[t, j]))
+                    self._eln(emission_matrix[t, j]))
 
         return log_delta
 
@@ -289,7 +291,7 @@ class GenericHMM(object):
 
         """
         transition_matrix = self.transition_matrix
-        observation_symbol = self.observation_symbol
+        emission_matrix = self.emission_matrix
         log_alpha = self._log_alpha
         log_beta = self._log_beta
         T = log_alpha.shape[0]
@@ -305,7 +307,7 @@ class GenericHMM(object):
                         self._elnproduct(
                             self._eln(transition_matrix[i, j]),
                             self._elnproduct(
-                                self._eln(observation_symbol[t+1, j]),
+                                self._eln(emission_matrix[t+1, j]),
                                 log_beta[t+1, j])))
                     normalizer = self._elnsum(normalizer,
                                               log_eta[t, i, j])
