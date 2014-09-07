@@ -5,18 +5,12 @@ Unit tests for extended exponential function.
 """
 from decimal import Decimal as d
 from decimal import Overflow
-import unittest
-
-import mock
 
 from himamo import GenericHMM
+from tests.helpers import BaseTestCase
 
 
-class ExtendedExpTestCase(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.model = GenericHMM([1], ['a'])
-
+class ExtendedExpTestCase(BaseTestCase):
     def smoke_test_extended_exponent(self):
         x = d(1)
         result = self.model._eexp(x)

@@ -5,14 +5,12 @@ Unit tests for extended logarithm product.
 """
 from decimal import Decimal as d
 from decimal import Overflow, InvalidOperation
-import unittest
-
-import mock
 
 from himamo import GenericHMM
+from tests.helpers import BaseTestCase
 
 
-class ExtendedLogProductTestCase(unittest.TestCase):
+class ExtendedLogProductTestCase(BaseTestCase):
     @classmethod
     def setUpClass(cls):
         cls.model = GenericHMM([1], ['a'])

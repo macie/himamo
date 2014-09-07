@@ -4,19 +4,12 @@ Unit tests for extended logarithm function.
 
 """
 from decimal import Decimal as d
-from decimal import Overflow
-import unittest
-
-import mock
 
 from himamo import GenericHMM
+from tests.helpers import BaseTestCase
 
 
-class ExtendedLogTestCase(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.model = GenericHMM([1], ['a'])
-
+class ExtendedLogTestCase(BaseTestCase):
     def smoke_test_extended_logarithm(self):
         x = d(1)
         result = self.model._eln(x)
