@@ -12,8 +12,8 @@ from himamo import GenericHMM
 from tests.helpers import BaseTestCase
 
 
-class RecomputeTransitionsTestCase(BaseTestCase):
-    def smoke_test_recompute_transitions(self):
+class RecomputeLogTransitionsTestCase(BaseTestCase):
+    def smoke_test_recompute_log_transitions(self):
         # N = 2, T = 3
         log_gamma = np.array([
             [d(1).ln(), d(2).ln(), d(3).ln()],
@@ -25,10 +25,10 @@ class RecomputeTransitionsTestCase(BaseTestCase):
             [
                 [d(2).ln(), d(4).ln(), d(6).ln()],
                 [d(18).ln(), d(10).ln(), d(12).ln()]]])
-        result = self.model._recompute_transitions(log_gamma, log_eta)
+        result = self.model._recompute_log_transitions(log_gamma, log_eta)
         expected_result = np.array([
-            [d(3)/d(3), d(9)/d(3)],
-            [d(6)/d(9), d(28)/d(9)]])
+            [(d(3)/d(3)).ln(), (d(9)/d(3)).ln()],
+            [(d(6)/d(9)).ln(), (d(28)/d(9)).ln()]])
         np.testing.assert_almost_equal(
             result, expected_result, decimal=self.num_precision-1)
 
@@ -50,11 +50,11 @@ class RecomputeTransitionsTestCase(BaseTestCase):
                 [d(8).ln(), d(1).ln()],
                 [d(9).ln(), d(1).ln()],
                 [d(1).ln(), d(1).ln()]]])
-        result = self.model._recompute_transitions(log_gamma, log_eta)
+        result = self.model._recompute_log_transitions(log_gamma, log_eta)
         expected_result = np.array([
-            [d(2)/d(1), d(3)/d(1), d(4)/d(1)],
-            [d(5)/d(2), d(6)/d(2), d(7)/d(2)],
-            [d(8)/d(3), d(9)/d(3), d(1)/d(3)]])
+            [(d(2)/d(1)).ln(), (d(3)/d(1)).ln(), (d(4)/d(1)).ln()],
+            [(d(5)/d(2)).ln(), (d(6)/d(2)).ln(), (d(7)/d(2)).ln()],
+            [(d(8)/d(3)).ln(), (d(9)/d(3)).ln(), (d(1)/d(3)).ln()]])
         np.testing.assert_almost_equal(
             result, expected_result, decimal=self.num_precision-2)
 
@@ -68,7 +68,7 @@ class RecomputeTransitionsTestCase(BaseTestCase):
                 [d(1).ln(), d(1).ln()],
                 [d(1).ln(), d(1).ln()]]])
         with self.assertRaises(ValueError):
-            self.model._recompute_transitions(log_gamma, log_eta)
+            self.model._recompute_log_transitions(log_gamma, log_eta)
 
     def test_none_loggamma(self):
         log_gamma = None
@@ -80,7 +80,7 @@ class RecomputeTransitionsTestCase(BaseTestCase):
                 [d(1).ln(), d(1).ln()],
                 [d(1).ln(), d(1).ln()]]])
         with self.assertRaises(TypeError):
-            self.model._recompute_transitions(log_gamma, log_eta)
+            self.model._recompute_log_transitions(log_gamma, log_eta)
 
     def test_invalid_size_loggamma(self):
         log_gamma = np.ones((1, 1, 1))
@@ -92,7 +92,7 @@ class RecomputeTransitionsTestCase(BaseTestCase):
                 [d(1).ln(), d(1).ln()],
                 [d(1).ln(), d(1).ln()]]])
         with self.assertRaises(ValueError):
-            self.model._recompute_transitions(log_gamma, log_eta)
+            self.model._recompute_log_transitions(log_gamma, log_eta)
 
     def test_empty_logeta(self):
         log_gamma = np.array([
@@ -100,7 +100,7 @@ class RecomputeTransitionsTestCase(BaseTestCase):
             [d(1).ln(), d(1).ln()]])
         log_eta = np.empty((0, 0, 0))
         with self.assertRaises(ValueError):
-            self.model._recompute_transitions(log_gamma, log_eta)
+            self.model._recompute_log_transitions(log_gamma, log_eta)
 
     def test_none_logeta(self):
         log_gamma = np.array([
@@ -108,7 +108,7 @@ class RecomputeTransitionsTestCase(BaseTestCase):
             [d(1).ln(), d(1).ln()]])
         log_eta = None
         with self.assertRaises(TypeError):
-            self.model._recompute_transitions(log_gamma, log_eta)
+            self.model._recompute_log_transitions(log_gamma, log_eta)
 
     def test_invalid_size_logeta(self):
         log_gamma = np.array([
@@ -116,13 +116,13 @@ class RecomputeTransitionsTestCase(BaseTestCase):
             [d(1).ln(), d(1).ln()]])
         log_eta = np.ones((1, 1))
         with self.assertRaises(ValueError):
-            self.model._recompute_transitions(log_gamma, log_eta)
+            self.model._recompute_log_transitions(log_gamma, log_eta)
 
     def test_mismatch_size_log_gamma_and_log_eta(self):
         log_gamma = np.array([[d(1)]*3]*2, dtype=object)
         log_eta = np.array([[[d(1)]*2]*3]*3, dtype=object)
         with self.assertRaises(ValueError):
-            self.model._recompute_transitions(log_gamma, log_eta)
+            self.model._recompute_log_transitions(log_gamma, log_eta)
 
     def test_one_state(self):
         log_gamma = np.array([
@@ -130,9 +130,9 @@ class RecomputeTransitionsTestCase(BaseTestCase):
         log_eta = np.array([
             [
                 [d(1).ln(), d(1).ln(), d(1).ln()]]])
-        result = self.model._recompute_transitions(log_gamma, log_eta)
+        result = self.model._recompute_log_transitions(log_gamma, log_eta)
         expected_result = np.array([
-            [d(2)/d(3)]])
+            [(d(2)/d(3)).ln()]])
         np.testing.assert_almost_equal(
             result, expected_result, decimal=self.num_precision-1)
 
@@ -154,21 +154,23 @@ class RecomputeTransitionsTestCase(BaseTestCase):
                 [d(1).ln()],
                 [d(1).ln()],
                 [d(1).ln()]]])
-        result = self.model._recompute_transitions(log_gamma, log_eta)
+        result = self.model._recompute_log_transitions(log_gamma, log_eta)
         # we don't know transitions, because we don't have history (time = 1)
         expected_result = np.array([
-            [d(0), d(0), d(0)],
-            [d(0), d(0), d(0)],
-            [d(0), d(0), d(0)]])
-        np.testing.assert_array_equal(result, expected_result)
+            [d('NaN'), d('NaN'), d('NaN')],
+            [d('NaN'), d('NaN'), d('NaN')],
+            [d('NaN'), d('NaN'), d('NaN')]])
+        for row in result:
+            for i in row:
+                self.assertTrue(i.is_nan())
 
     @unittest.skip('long duration')
     def test_numerical_stability_if_increased_time(self):
         for i in xrange(1, 5):
             log_gamma = np.array([[d(2).ln()]*(8**i)]*2)
             log_eta = np.array([[[d(1).ln()]*(8**i)]*2]*2)
-            result = self.model._recompute_transitions(log_gamma, log_eta)
-            expected_result = np.array([[d(1)/d(2)]*2]*2)
+            result = self.model._recompute_log_transitions(log_gamma, log_eta)
+            expected_result = np.array([[(d(1)/d(2)).ln()]*2]*2)
             np.testing.assert_almost_equal(
                 result, expected_result, decimal=self.num_precision-1)
 
@@ -177,6 +179,6 @@ class RecomputeTransitionsTestCase(BaseTestCase):
         for i in xrange(0, 4):
             log_gamma = np.array([[d(2).ln()]*2]*(6**i))
             log_eta = np.array([[[d(1).ln()]*2]*(6**i)]*(6**i))
-            result = self.model._recompute_transitions(log_gamma, log_eta)
-            expected_result = np.array([[d(1)/d(2)]*(6**i)]*(6**i))
+            result = self.model._recompute_log_transitions(log_gamma, log_eta)
+            expected_result = np.array([[(d(1)/d(2)).ln()]*(6**i)]*(6**i))
             np.testing.assert_array_equal(result, expected_result)

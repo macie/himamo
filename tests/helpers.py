@@ -20,9 +20,10 @@ class BaseTestCase(unittest.TestCase):
 
     @classmethod
     def _testing_parameters_generator(
-            cls, N, T, pi_val=d(1), a_val=d(1), b_val=d(1)):
-        initial_states = np.array([pi_val]*N, dtype=object)
-        transition_matrix = np.array([[a_val]*N]*N, dtype=object)
-        emission_matrix = np.array([[b_val]*T]*N, dtype=object)
+            cls, N, T, log_pi_val=d(1).ln(),
+            log_a_val=d(1).ln(), log_b_val=d(1).ln()):
+        initial_states = np.array([log_pi_val]*N, dtype=object)
+        transition_matrix = np.array([[log_a_val]*N]*N, dtype=object)
+        emission_matrix = np.array([[log_b_val]*T]*N, dtype=object)
 
         return initial_states, transition_matrix, emission_matrix
