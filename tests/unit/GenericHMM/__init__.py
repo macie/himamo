@@ -9,6 +9,10 @@ from tests.unit.GenericHMM.test_eln import ExtendedLogTestCase
 from tests.unit.GenericHMM.test_elnsum import ExtendedLogSumTestCase
 from tests.unit.GenericHMM.test_elnproduct import ExtendedLogProductTestCase
 
+from tests.unit.GenericHMM.test_initial_states import InitialStatesPropertyTestCase
+from tests.unit.GenericHMM.test_transition_matrix import TransitionMatrixPropertyTestCase
+from tests.unit.GenericHMM.test_emission_matrix import EmissionMatrixPropertyTestCase
+
 from tests.unit.GenericHMM.test_compute_logalpha import ComputeLogAlphaTestCase
 from tests.unit.GenericHMM.test_compute_logbeta import ComputeLogBetaTestCase
 from tests.unit.GenericHMM.test_compute_loggamma import ComputeLogGammaTestCase
@@ -21,7 +25,9 @@ from tests.unit.GenericHMM.test_recompute_emissions import RecomputeEmissionsTes
 
 __all__ = ['ExtendedExpTestCase', 'ExtendedLogTestCase',
            'ExtendedLogSumTestCase', 'ExtendedLogProductTestCase',
-           'ComputeLogAlphaTestCase', 'ComputeLogBetaTestCase',
-           'ComputeLogGammaTestCase', 'ComputeLogDeltaTestCase',
-           'ComputeLogEtaTestCase', 'RecomputeInitialStatesTestCase',
-           'RecomputeTransitionsTestCase', 'RecomputeEmissionsTestCase']
+           'InitialStatesPropertyTestCase', 'TransitionMatrixPropertyTestCase',
+           'EmissionMatrixPropertyTestCase', 'ComputeLogAlphaTestCase',
+           'ComputeLogBetaTestCase', 'ComputeLogGammaTestCase',
+           'ComputeLogDeltaTestCase', 'ComputeLogEtaTestCase',
+           'RecomputeInitialStatesTestCase', 'RecomputeTransitionsTestCase',
+           'RecomputeEmissionsTestCase']
